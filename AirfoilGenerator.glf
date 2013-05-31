@@ -13,23 +13,30 @@
 # Written by Travis Carrigan
 #
 # v1: Dec 15, 2010
+# v2: May 30, 2013
 #
 
 # Load Pointwise Glyph package and Tk
-package require PWI_Glyph 2.4
+package require PWI_Glyph
 pw::Script loadTk
 
 # AIRFOIL GUI INFORMATION
 # -----------------------------------------------
+set naca 0012
+set sharp 1
 wm title . "Airfoil Generator"
 grid [ttk::frame .c -padding "5 5 5 5"] -column 0 -row 0 -sticky nwes
 grid columnconfigure . 0 -weight 1; grid rowconfigure . 0 -weight 1
 grid [ttk::labelframe .c.lf -padding "5 5 5 5" -text "NACA 4-Series Airfoil Generator"]
 grid [ttk::label .c.lf.nacal -text "NACA"] -column 1 -row 1 -sticky e
 grid [ttk::entry .c.lf.nacae -width 5 -textvariable naca] -column 2 -row 1 -sticky e
-grid [ttk::button .c.lf.gob -text "CREATE" -command airfoilGen] -column 3 -row 1 -sticky e
+grid [ttk::frame .c.lf.te] -column 3 -row 1 -sticky e
+grid [ttk::radiobutton .c.lf.te.sharprb -text "Sharp" -value 1 -variable sharp] -column 1 -row 1 -sticky w
+grid [ttk::radiobutton .c.lf.te.bluntrb -text "Blunt" -value 0 -variable sharp] -column 1 -row 2 -sticky w
+grid [ttk::button .c.lf.gob -text "CREATE" -command airfoilGen] -column 4 -row 1 -sticky e
 foreach w [winfo children .c.lf] {grid configure $w -padx 10 -pady 10}
 focus .c.lf.nacae
+::tk::PlaceWindow . widget
 bind . <Return> {airfoilGen}
 
 proc airfoilGen {} {
@@ -45,6 +52,7 @@ set a [string index $::naca 2]
 set b [string index $::naca 3]
 set c "$a$b"
 set t [expr {$c/100.0}]
+set s $::sharp
 
 # GENERATE AIRFOIL COORDINATES
 # -----------------------------------------------
@@ -80,8 +88,13 @@ foreach xx $x {
 	}
 
 	# Thickness distribution
-	lappend yt [expr {($t/0.20)*(0.29690*sqrt($xx)-0.12600*$xx- \
-	                  0.35160*$xx**2+0.28430*$xx**3-0.10150*$xx**4)}]
+    if {$s} {
+	    lappend yt [expr {($t/0.20)*(0.29690*sqrt($xx)-0.12600*$xx- \
+	                      0.35160*$xx**2+0.28430*$xx**3-0.1036*$xx**4)}]
+    } else {
+	    lappend yt [expr {($t/0.20)*(0.29690*sqrt($xx)-0.12600*$xx- \
+	                      0.35160*$xx**2+0.28430*$xx**3-0.1015*$xx**4)}]
+    }
 
 	# Theta
 	set dy [expr {[lindex $yc end] - [lindex $yc end-1]}]
@@ -123,14 +136,16 @@ set airLowerCurve [pw::Curve create]
 $airLowerCurve addSegment $airLowerPts
 $airLower end
 
-# Create flat trailing edge
-set airTrail [pw::Application begin Create]
-set airTrailPts [pw::SegmentSpline create]
-$airTrailPts addPoint [list [lindex $xu end] [lindex $yu end] 0]
-$airTrailPts addPoint [list [lindex $xl end] [lindex $yl end] 0]
-set airTrailCurve [pw::Curve create]
-$airTrailCurve addSegment $airTrailPts
-$airTrail end
+if {!$s} {
+    # Create flat trailing edge
+    set airTrail [pw::Application begin Create]
+    set airTrailPts [pw::SegmentSpline create]
+    $airTrailPts addPoint [list [lindex $xu end] [lindex $yu end] 0]
+    $airTrailPts addPoint [list [lindex $xl end] [lindex $yl end] 0]
+    set airTrailCurve [pw::Curve create]
+    $airTrailCurve addSegment $airTrailPts
+    $airTrail end
+}
 
 # Zoom to airfoil geometry
 pw::Display resetView
