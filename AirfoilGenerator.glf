@@ -66,14 +66,19 @@ set yl {}
 set yc {0}
 set yt {}
 
+# Define pi
+set pi [expr {355.0/113.0}]
+
+# Airfoil number of steps
+set nsteps 1000
 # Airfoil step size
-set ds 0.001
+set ds [expr {$pi/$nsteps}]
 
 # Check if airfoil is symmetric or cambered
 if {$m == 0 && $p == 0 || $m == 0 || $p == 0} {set symm 1} else {set symm 0}
 
-# Get x coordinates
-for {set i 0} {$i < [expr {1+$ds}]} {set i [expr {$i+$ds}]} {lappend x $i}
+# Get x coordinates; improved distribution explained here: http://airfoiltools.com/airfoil/naca4digit?MNaca4DigitForm%5Bcamber%5D=0&MNaca4DigitForm%5Bposition%5D=0&MNaca4DigitForm%5Bthick%5D=12&MNaca4DigitForm%5BnumPoints%5D=81&MNaca4DigitForm%5BcosSpace%5D=0&MNaca4DigitForm%5BcosSpace%5D=1&MNaca4DigitForm%5BcloseTe%5D=0&MNaca4DigitForm%5BcloseTe%5D=1&yt0=Plot
+for {set i 0} {$i < [expr {$pi+$ds}]} {set i [expr {$i+$ds}]} {lappend x [expr {0.5*(1.0 - cos($i))}]}
 
 # Calculate mean camber line and thickness distribution
 foreach xx $x {
