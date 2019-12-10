@@ -1,9 +1,9 @@
 #
 # Copyright 2010 (c) Pointwise, Inc.
 # All rights reserved.
-# 
+#
 # This sample Glyph script is not supported by Pointwise, Inc.
-# It is provided freely for demonstration purposes only.  
+# It is provided freely for demonstration purposes only.
 # SEE THE WARRANTY DISCLAIMER AT THE BOTTOM OF THIS FILE.
 #
 
@@ -19,6 +19,9 @@
 # Load Pointwise Glyph package and Tk
 package require PWI_Glyph
 pw::Script loadTk
+
+# Load math constants for pi
+package require math::constants
 
 # AIRFOIL GUI INFORMATION
 # -----------------------------------------------
@@ -43,11 +46,11 @@ proc airfoilGen {} {
 
 # AIRFOIL INPUTS
 # -----------------------------------------------
-# m = maximum camber 
-# p = maximum camber location 
+# m = maximum camber
+# p = maximum camber location
 # t = maximum thickness
-set m [expr {[string index $::naca 0]/100.0}]  
-set p [expr {[string index $::naca 1]/10.0}] 
+set m [expr {[string index $::naca 0]/100.0}]
+set p [expr {[string index $::naca 1]/10.0}]
 set a [string index $::naca 2]
 set b [string index $::naca 3]
 set c "$a$b"
@@ -66,14 +69,22 @@ set yl {}
 set yc {0}
 set yt {}
 
+# Define pi
+# The easy way; see the section named "Practical approximations" here: https://en.wikipedia.org/wiki/Approximations_of_π
+# set pi [expr {355.0/113.0}]
+# Another easy way that has a dependency: it requires the math::constants package
+math::constants::constants pi
+
+# Airfoil number of steps
+set nsteps 1000
 # Airfoil step size
-set ds 0.001
+set ds [expr {$pi/$nsteps}]
 
 # Check if airfoil is symmetric or cambered
 if {$m == 0 && $p == 0 || $m == 0 || $p == 0} {set symm 1} else {set symm 0}
 
-# Get x coordinates
-for {set i 0} {$i < [expr {1+$ds}]} {set i [expr {$i+$ds}]} {lappend x $i}
+# Get x coordinates; improved distribution explained here: http://airfoiltools.com/airfoil/naca4digit?MNaca4DigitForm%5Bcamber%5D=0&MNaca4DigitForm%5Bposition%5D=0&MNaca4DigitForm%5Bthick%5D=12&MNaca4DigitForm%5BnumPoints%5D=81&MNaca4DigitForm%5BcosSpace%5D=0&MNaca4DigitForm%5BcosSpace%5D=1&MNaca4DigitForm%5BcloseTe%5D=0&MNaca4DigitForm%5BcloseTe%5D=1&yt0=Plot
+for {set i 0} {$i < [expr {$pi+$ds}]} {set i [expr {$i+$ds}]} {lappend x [expr {0.5*(1.0 - cos($i))}]}
 
 # Calculate mean camber line and thickness distribution
 foreach xx $x {
@@ -161,12 +172,12 @@ exit
 # TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, POINTWISE DISCLAIMS
 # ALL WARRANTIES, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED
 # TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE, WITH REGARD TO THIS SCRIPT.  TO THE MAXIMUM EXTENT PERMITTED 
-# BY APPLICABLE LAW, IN NO EVENT SHALL POINTWISE BE LIABLE TO ANY PARTY 
-# FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES 
-# WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF 
-# BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE 
-# USE OF OR INABILITY TO USE THIS SCRIPT EVEN IF POINTWISE HAS BEEN 
-# ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND REGARDLESS OF THE 
+# PURPOSE, WITH REGARD TO THIS SCRIPT.  TO THE MAXIMUM EXTENT PERMITTED
+# BY APPLICABLE LAW, IN NO EVENT SHALL POINTWISE BE LIABLE TO ANY PARTY
+# FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES
+# WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF
+# BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE
+# USE OF OR INABILITY TO USE THIS SCRIPT EVEN IF POINTWISE HAS BEEN
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND REGARDLESS OF THE
 # FAULT OR NEGLIGENCE OF POINTWISE.
 #
