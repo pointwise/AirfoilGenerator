@@ -20,6 +20,9 @@
 package require PWI_Glyph
 pw::Script loadTk
 
+# Load math constants for pi
+package require math::constants
+
 # AIRFOIL GUI INFORMATION
 # -----------------------------------------------
 set naca 0012
@@ -67,7 +70,10 @@ set yc {0}
 set yt {}
 
 # Define pi
-set pi [expr {355.0/113.0}]
+# The easy way; see the section named "Practical approximations" here: https://en.wikipedia.org/wiki/Approximations_of_π
+# set pi [expr {355.0/113.0}]
+# Another easy way that has a dependency: it requires the math::constants package
+math::constants::constants pi
 
 # Airfoil number of steps
 set nsteps 1000
